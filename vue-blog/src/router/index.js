@@ -46,7 +46,8 @@ const router = createRouter({
     {
       path: '/user/:id/articles',
       name: 'user-articles',
-      component: PlaceholderView
+      component: () => import('../views/user/UserArticlesView.vue'),
+      meta: { requiresAuth: true }
     },
     // 登录
     {
@@ -150,7 +151,19 @@ const router = createRouter({
       name: 'Search',
       component: () => import('../views/Search.vue'),
       meta: { requiresAuth: true }
-  }
+    },
+    // AI聊天页面
+    {
+      path: '/ai-chat',
+      name: 'ai-chat',
+      component: () => import('../views/user/AIChatView.vue')
+    },
+    // RAG测试页面
+    {
+      path: '/rag-test',
+      name: 'rag-test',
+      component: () => import('../views/user/RAGTestView.vue')
+    }
   ],
 })
 

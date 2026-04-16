@@ -137,7 +137,13 @@ export const useUserStore = defineStore('user', {
         this.user = res.user
       }
       return res
-    } 
+    },
+
+    // 获取指定用户信息
+    async getUserInfo(userId: number) {
+      const res: any = await request.get(`/user/${userId}`)
+      return res.user
+    }
   }
   
 })

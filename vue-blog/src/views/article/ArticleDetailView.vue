@@ -36,7 +36,7 @@
             <el-card shadow="hover" class="article-detail-card">
               <h1 class="article-title">{{ articleDetail?.title }}</h1>
               <div class="article-meta">
-                <span class="author">{{ articleDetail?.author?.username }}</span>
+                <span class="author">{{ articleDetail?.authorName }}</span>
                 <span class="date">{{ articleDetail?.createTime }}</span>
                 <span class="category" v-if="articleDetail?.categoryId">
                   <router-link :to="`/category/${articleDetail.categoryId}`">
@@ -111,12 +111,12 @@
                 <el-card v-for="comment in commentStore.getCommentList" :key="comment.id" shadow="hover" class="comment-item">
                   <div class="comment-header">
                     <div class="comment-author">
-                      <el-avatar :src="comment.author?.avatar || ''" size="small" />
-                      <span class="author-name">{{ comment.author?.username }}</span>
+                      <el-avatar :src="comment.authorAvatar || ''" size="small" />
+                      <span class="author-name">{{ comment.authorName }}</span>
                     </div>
                     <span class="comment-date">{{ comment.createTime }}</span>
                   </div>
-                  <div class="comment-content">{{ comment.content }}</div>
+                  <div class="comment-content" v-html="comment.content"></div>
                   <div class="comment-actions">
                     <el-button link @click="handleCommentLike(comment.id)">
                       <el-icon>
@@ -136,12 +136,12 @@
                     <el-card v-for="reply in comment.replies" :key="reply.id" shadow="hover" class="reply-item">
                       <div class="comment-header">
                         <div class="comment-author">
-                          <el-avatar :src="reply.author?.avatar || ''" size="small" />
-                          <span class="author-name">{{ reply.author?.username }}</span>
-                        </div>
-                        <span class="comment-date">{{ reply.createTime }}</span>
-                      </div>
-                      <div class="comment-content">{{ reply.content }}</div>
+                          <el-avatar :src="reply.authorAvatar || ''" size="small" />
+                          <span class="author-name">{{ reply.authorName }}</span>
+                    </div>
+                    <span class="comment-date">{{ reply.createTime }}</span>
+                  </div>
+                  <div class="comment-content" v-html="reply.content"></div>
                       <div class="comment-actions">
                         <el-button link @click="handleCommentLike(reply.id)">
                           <el-icon>
@@ -203,8 +203,8 @@
                 </div>
               </template>
               <div class="author-info">
-                <el-avatar :src="articleDetail?.author?.avatar || ''" size="large" class="author-avatar" />
-                <h3 class="author-name">{{ articleDetail?.author?.username }}</h3>
+                <el-avatar :src="articleDetail?.authorAvatar || ''" size="large" class="author-avatar" />
+                <h3 class="author-name">{{ articleDetail?.authorName }}</h3>
                 <p class="author-signature">{{ articleDetail?.author?.signature || '暂无签名' }}</p>
                 <el-button link @click="viewAuthorArticles">查看更多文章</el-button>
               </div>
@@ -389,6 +389,11 @@ const scrollToComment = () => {
   }
 }
 
+// 处理文本换行，将\n转换为<br>
+const handleLineBreaks = (text) => {
+  return text.replace(/\n/g, '<br>')
+}
+
 // 提交评论
 const submitComment = async () => {
   if (!commentFormRef.value) return
@@ -396,9 +401,13 @@ const submitComment = async () => {
     if (valid) {
       try {
         commentLoading.value = true
+        
+        // 处理换行符，将\n转换为<br>
+        const processedContent = handleLineBreaks(commentForm.value.content)
+        
         await commentStore.createComment({
           articleId: articleId.value,
-          content: commentForm.value.content
+          content: processedContent
         })
         commentForm.value.content = ''
         await getComments()
@@ -443,7 +452,11 @@ const submitReply = async () => {
   
   try {
     replyLoading.value = true
-    await commentStore.replyComment(replyToCommentId.value, replyForm.value.content)
+    
+    // 处理换行符，将\n转换为<br>
+    const processedContent = handleLineBreaks(replyForm.value.content)
+    
+    await commentStore.replyComment(replyToCommentId.value, processedContent)
     replyForm.value.content = ''
     replyToCommentId.value = null
     await getComments()

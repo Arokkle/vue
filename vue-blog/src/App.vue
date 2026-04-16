@@ -1,10 +1,18 @@
 <script setup>
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from './stores/user'
 import webSocket from './utils/websocket'
 import { ElNotification } from 'element-plus'
+import { ChatDotRound } from '@element-plus/icons-vue'
 
+const router = useRouter()
 const userStore = useUserStore()
+
+// 跳转到AI聊天页面
+const navigateToAIChat = () => {
+  router.push('/ai-chat')
+}
 
 // 应用初始化时恢复用户状态
 onMounted(() => {
@@ -36,7 +44,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <router-view />
+  <div class="app-container">
+    <router-view />
+    <!-- 悬浮AI助手按钮 -->
+    <div class="ai-assistant-float" @click="navigateToAIChat">
+      <el-button type="primary" circle size="large" class="ai-button">
+        <el-icon><ChatDotRound /></el-icon>
+      </el-button>
+      <div class="ai-tooltip">AI 助手</div>
+    </div>
+  </div>
 </template>
 
 <style>
@@ -87,6 +104,73 @@ body {
 #app > * {
   position: relative;
   z-index: 1;
+}
+
+/* 悬浮AI助手按钮 */
+.ai-assistant-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.ai-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(139, 195, 74, 0.4);
+  transition: all 0.3s ease;
+  background-color: #8BC34A;
+  border: none;
+}
+
+.ai-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(139, 195, 74, 0.6);
+  background-color: #7CB342;
+}
+
+.ai-button .el-icon {
+  font-size: 24px;
+  color: white;
+}
+
+.ai-tooltip {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.ai-assistant-float:hover .ai-tooltip {
+  opacity: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ai-assistant-float {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .ai-button {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .ai-button .el-icon {
+    font-size: 20px;
+  }
 }
 
 /* Element Plus 样式覆盖 */

@@ -32,6 +32,7 @@ const defaultArticle: Partial<Article> = {
 
 interface ArticleState {
   articles: Article[]
+  userArticles: Article[]
   currentArticle: Article | null
   total: number
   page: number
@@ -41,6 +42,7 @@ interface ArticleState {
 export const useArticleStore = defineStore('article', {
   state: (): ArticleState => ({
     articles: [],
+    userArticles: [],
     currentArticle: null,
     total: 0,
     page: 1,
@@ -215,11 +217,14 @@ export const useArticleStore = defineStore('article', {
 
     // 记录推荐反馈
     async recordRecommendationFeedback(articleId: number, action: string, score?: number) {
-      const res: any = await request.post('/recommend/feedback', {
-        articleId,
-        action,
-        score
-      }, {
+      // 使用URLSearchParams构造表单数据，符合后端@RequestParam要求
+      const params = new URLSearchParams()
+      params.append('articleId', articleId.toString())
+      params.append('action', action)
+      if (score !== undefined && score !== null) {
+        params.append('score', score.toString())
+      }
+      const res: any = await request.post('/recommend/feedback', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -235,6 +240,21 @@ export const useArticleStore = defineStore('article', {
     // 发布文章
     async publishArticle(id: number) {
       const res: any = await request.post(`/article/${id}/publish`)
+      return res
+    },
+
+    // 获取用户文章
+    async fetchUserArticles(userId: number, params?: { page?: number; size?: number }) {
+      const res: any = await request.get(`/article/user/${userId}`, {
+        params: {
+          page: params?.page || this.page,
+          size: params?.size || this.size
+        }
+      })
+      this.userArticles = res.data.records
+      this.total = res.data.total
+      this.page = res.data.current
+      this.size = res.data.size
       return res
     }
   }

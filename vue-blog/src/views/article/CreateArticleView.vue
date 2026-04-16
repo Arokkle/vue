@@ -287,11 +287,15 @@ const autoSaveDraft = async () => {
   
   try {
     isAutoSaving.value = true
+    
+    // 处理换行符，将\n转换为<br>
+    const processedContent = handleLineBreaks(articleForm.content)
+    
     // 只传递后端createArticle方法中定义的参数，避免400错误
     const articleData = {
       title: articleForm.title,
       summary: articleForm.summary,
-      content: articleForm.content,
+      content: processedContent,
       categoryId: articleForm.categoryId,
       status: 0 // 草稿状态
     }
@@ -311,8 +315,8 @@ const autoSaveDraft = async () => {
 const togglePreview = () => {
   isPreviewMode.value = !isPreviewMode.value
   if (isPreviewMode.value) {
-    // 这里可以添加Markdown渲染逻辑，如果需要的话
-    previewContent.value = articleForm.content
+    // 处理换行符，将\n转换为<br>
+    previewContent.value = handleLineBreaks(articleForm.content)
   }
 }
 
@@ -321,6 +325,11 @@ const formatTime = (date) => {
   if (!date) return ''
   const d = new Date(date)
   return d.toLocaleTimeString()
+}
+
+// 处理文本换行，将\n转换为<br>
+const handleLineBreaks = (text: string): string => {
+  return text.replace(/\n/g, '<br>')
 }
 
 // 提交文章
@@ -339,11 +348,14 @@ const submitArticle = async () => {
       try {
         isSubmitting.value = true
         
+        // 处理换行符，将\n转换为<br>
+        const processedContent = handleLineBreaks(articleForm.content)
+        
         // 只传递后端createArticle方法中定义的参数，避免400错误
         const articleData = {
           title: articleForm.title,
           summary: articleForm.summary,
-          content: articleForm.content,
+          content: processedContent,
           categoryId: articleForm.categoryId,
           status: articleForm.status
         }
